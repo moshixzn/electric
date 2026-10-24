@@ -360,6 +360,18 @@ local function isGearOrInventoryGui(_iLiILIlL91)
         return false
     end
     local _IllIIlIllII_92 = _iLiILIlL91.Name:lower()
+    -- Never let automation click the script's own panel or notification UI.
+    local _ownUiAncestor = _iLiILIlL91
+    for _ownUiDepth = 1, 20 do
+        if not _ownUiAncestor then
+            break
+        end
+        local _ownUiName = string.lower(_ownUiAncestor.Name)
+        if _ownUiName == "pixellineagecombatgui" or _ownUiName == "pixelcombatbannerholder" or _ownUiName == "combatbanner" then
+            return true
+        end
+        _ownUiAncestor = _ownUiAncestor.Parent
+    end
     if _IllIIlIllII_92 == "gear" or _IllIIlIllII_92:find("^gear") or _IllIIlIllII_92 == "inventory" or _IllIIlIllII_92:find("inventory") or _IllIIlIllII_92 == "character" then
         return true
     end
@@ -3822,19 +3834,22 @@ local function createControlPanel()
     local _LilIliIl881 = false
     local _lll1l_III1I1I882, _lllIllIlIl_883, _LiIiILIll884
     _LIlIiLlLi868.InputBegan:Connect(function(_LLililillL915)
-        if _LLililillL915.UserInputType == Enum.UserInputType.MouseButton1 then
+        if _LLililillL915.UserInputType == Enum.UserInputType.MouseButton1
+            or _LLililillL915.UserInputType == Enum.UserInputType.Touch then
             _LilIliIl881 = true
             _lllIllIlIl_883 = _LLililillL915.Position
             _LiIiILIll884 = _LlIiiiLl865.Position
             _LLililillL915.Changed:Connect(function()
-                if _LLililillL915.UserInputState == Enum.UserInputState.End then
+                if _LLililillL915.UserInputState == Enum.UserInputState.End
+                    or _LLililillL915.UserInputState == Enum.UserInputState.Cancel then
                     _LilIliIl881 = false
                 end
             end)
         end
     end)
     _LIlIiLlLi868.InputChanged:Connect(function(_I_II1__916)
-        if _I_II1__916.UserInputType == Enum.UserInputType.MouseMovement then
+        if _I_II1__916.UserInputType == Enum.UserInputType.MouseMovement
+            or _I_II1__916.UserInputType == Enum.UserInputType.Touch then
             _lll1l_III1I1I882 = _I_II1__916
         end
     end)
@@ -3842,6 +3857,12 @@ local function createControlPanel()
         if _lIlIllllIlIIll_917 == _lll1l_III1I1I882 and _LilIliIl881 then
             local _LLlIIiLiLL918 = _lIlIllllIlIIll_917.Position - _lllIllIlIl_883
             _LlIiiiLl865.Position = UDim2.new(_LiIiILIll884.X.Scale, _LiIiILIll884.X.Offset + _LLlIIiLiLL918.X, _LiIiILIll884.Y.Scale, _LiIiILIll884.Y.Offset + _LLlIIiLiLL918.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(_dragReleaseInput)
+        if _dragReleaseInput.UserInputType == Enum.UserInputType.MouseButton1
+            or _dragReleaseInput.UserInputType == Enum.UserInputType.Touch then
+            _LilIliIl881 = false
         end
     end)
     local _lIlllIlIIIl_885 = Instance.new("Frame")
